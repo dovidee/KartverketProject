@@ -1,95 +1,95 @@
 # Kartverket Project
 
-Registrer og se hindringer i kartet, også uten nettforbindelse.
+Register and view obstacles on the map, even without an internet connection.
 
-## Innholdsfortegnelse
+## Table of Contents
 
-### Oppsett
-1. [Kom i gang](#kom-i-gang)
-2. [Offlinekart](#offlinekart)
-3. [Testbrukere](#testbrukere)
+### Setup
+1. [Getting Started](#getting-started)
+2. [Offline Map](#offline-map)
+3. [Test Users](#test-users)
 
-### Feil
-4. [Tilbakestille migrasjoner](#tilbakestille-migrasjoner)
+### Errors
+4. [Resetting Migrations](#resetting-migrations)
 5. [An error occurred using the connection to the database](#an-error-occurred-using-the-connection-to-the-database)
 
-### Arkitektur
+### Architecture
 6. [Model View Controller](#model-view-controller)
 7. [Docker](#docker)
 8. [Frontend](#frontend)
 9. [Backend](#backend)
-10. [Systemkontekstdiagram](#systemkontekstdiagram)
-11. [Mermaiddiagram](#mermaiddiagram)
+10. [System Context Diagram](#system-context-diagram)
+11. [Mermaid Diagram](#mermaid-diagram)
 
 ### Testing
-12. [Enhetstest](#enhetstest)
-13. [Systemtest](#systemtest)
-14. [Sikkerhetstest](#sikkerhetstest)
-15. [Brukertest](#brukertest)
+12. [Unit Testing](#unit-testing)
+13. [System Testing](#system-testing)
+14. [Security Testing](#security-testing)
+15. [User Testing](#user-testing)
 
-### Bidragsytere
-16. [Bidragsytere](#bidragsytere-1)
+### Contributors
+16. [Contributors](#contributors-1)
 
-## Kom i gang
+## Getting Started
 
 
-1. Åpne cmd og klon prosjektet
+1. Open cmd and clone the project
 
 
 ![CMD](images/cmd1.png)
 
 
-2. Åpne solution-filen i Visual Studio
+2. Open the solution file in Visual Studio
 
 
 ![SOL](images/solution2.png)
 
 
-3. Høyreklikk på docker-compose, hold musen over Add, og klikk New Item.
+3. Right click docker-compose, hover over Add, and click New Item.
 
 
 ![dockercompose](images/add3.png)
 
 
-4. Gi filen navnet .env
+4. Name the file .env
 
 
 ![ENV](images/env4.png)
 
 
-5. I .env skriver du DBPASSWORD= og deretter et vilkårlig passord. Sørg for at appsettings.json også inneholder passordet i Pwd=, ellers vil det ikke fungere.
+5. In .env, write DBPASSWORD= followed by a password of your choice. Make sure appsettings.json also contains the password in Pwd=, otherwise it will not work.
 
 
 ![PASS](images/apppass5.png)
 
 
-6. I Visual Studio:
+6. In Visual Studio:
 
 
 Tools -> NuGet Package Manager -> Package Manager Console
 
 
-7. Kjør følgende kommando
+7. Run the following command
 
 
 docker compose up --build
 
 
-8. Gå til http://localhost:8082 og logg inn med testbrukerne.
+8. Go to http://localhost:8082 and log in with the test users.
 
-9. For å se kartet, last ned offlinekartet fra Releases-siden eller med lenken under.
+9. To view the map, download the offline map from the Releases page or via the link below.
 
-## Offlinekart
+## Offline Map
 
-For å kunne se kartet, last ned ZIP-filen på 1,17 GB under.
+To be able to view the map, download the 1.17 GB ZIP file below.
 
 http://github.com/dovidee/KartverketProject/releases/latest/download/norway.zip
 
-Pakk ut mappen og legg filen norway.mbtiles i KartverketProject/KartverketProject/wwwroot/
+Extract the folder and place the norway.mbtiles file in KartverketProject/KartverketProject/wwwroot/
 
-## Testbrukere
+## Test Users
 
-brukernavn:passord
+username:password
 
 1. johnd:admin (NLA, admin)
   
@@ -99,27 +99,27 @@ brukernavn:passord
 
 4. janiced:admin (Luftsforsvaret, reviewer)
 
-## Tilbakestille migrasjoner
+## Resetting Migrations
 
 
-1. Slett migrations-mappen
+1. Delete the migrations folder
 
 
 ![MIG](images/migrations15.png)
 
-2. Bytt til KartverketProject 
+2. Switch to KartverketProject 
 
 
 ![SEL](images/selectdockercompose8.png)
 
 
-3. I Visual Studio:
+3. In Visual Studio:
 
 
 Tools -> NuGet Package Manager -> Package Manager Console
 
 
-4. Kjør følgende kommandoer
+4. Run the following commands
 
 Add-Migration NewMigration
 
@@ -127,225 +127,223 @@ Update-Database
 
 ## An error occurred using the connection to the database 
 
-1. Åpne cmd, list opp med «docker volume ls» og kjør deretter «docker volume rm {VOLUMENAME HERE}». Hvis den sier at volumet er i bruk, gå til Docker Desktop og slett containeren.
+1. Open cmd, list the volumes with "docker volume ls" and then run "docker volume rm {VOLUMENAME HERE}". If it says the volume is in use, go to Docker Desktop and delete the container.
 
 ![VOL](images/volume6.png)
 
 
 ![DEL](images/deletecompose7.png)
 
-2. Kjør prosjektet som docker-compose for å sette opp volumet på nytt.
+2. Run the project as docker-compose to set the volume up again.
 
 
-## Systemarkitektur
+## System Architecture
 
 ### Model View Controller
 
-MVC gjør det enklere å kode, feilsøke og teste noe som kun har en oppgave.
+MVC makes it easier to code, debug and test something that has only one responsibility.
 
 ![MVC](images/mvc14.png)
 
-Modellen representerer forretningslogikken eller operasjonene. Dette kan være i form av feilmeldinger eller lagring av dataoverføringsobjekter.
+The model represents the business logic or the operations. This can take the form of error messages or storage of data transfer objects.
 
-Viewet har ansvar for å presentere innhold gjennom brukergrensesnittet. Dette omfatter layout og sider.
+The view is responsible for presenting content through the user interface. This covers layout and pages.
 
-Controlleren håndterer brukerinteraksjon og styrer hvordan applikasjonen svarer på en gitt forespørsel.
+The controller handles user interaction and governs how the application responds to a given request.
 
-Brukeren ønsker å registrere en bruker. POST-forespørselen treffer controlleren, som deretter mottar modellen. Hvis modellvalideringen feiler, lagrer modellstatusen feilen. Controlleren sjekker så om modellstatusen er gyldig og returnerer viewet.
+The user wants to register an account. The POST request hits the controller, which then receives the model. If model validation fails, the model state stores the error. The controller then checks whether the model state is valid and returns the view.
 
 ### Docker
 
-Docker er en plattform som pakker applikasjonen og avhengighetene dens inn i en container.
+Docker is a platform that packages the application and its dependencies into a container.
 
-Dockerfilen inneholder instruksjonene for å bygge et Docker-image.
+The Dockerfile contains the instructions for building a Docker image.
 
-Imaget brukes deretter til å bygge applikasjonen.
+The image is then used to build the application.
 
-docker-compose.yml er en konfigurasjonsfil som setter opp containerne, der den henter passordet fra .env-filen.
+docker-compose.yml is a configuration file that sets up the containers, where it pulls the password from the .env file.
 
-Applikasjonen monterer så volumene fra verten til containeren.
+The application then mounts the volumes from the host into the container.
 
 ### Frontend
 
-Statiske filer serveres fra wwwroot til brukerens nettleser.
+Static files are served from wwwroot to the user's browser.
 
 https://github.com/dovidee/KartverketProject/blob/c7bc85a6db046f4227ac6778df9241b47b521a0c/KartverketProject/Program.cs#L102
 
-CSS brukes til å utforme nettsiden. Prosjektet bruker Tailwind CSS for å forenkle dette.
+CSS is used to style the website. The project uses Tailwind CSS to simplify this.
 
-JS brukes til å gjøre siden interaktiv. Prosjektet bruker Leaflet til å lage kartet.
+JS is used to make the page interactive. The project uses Leaflet to create the map.
 
 ### Backend
 
-ApplicationDbContext bruker dependency injection for å hente tjenester som ASP.NET Core Identity til å logge inn og registrere brukere.
+ApplicationDbContext uses dependency injection to resolve services such as ASP.NET Core Identity for logging in and registering users.
 
-Rollene admin, reviewer og user opprettes. Brukeren opprettes med et hashet passord, ettersom lagring av passord i klartekst er en sikkerhetsrisiko.
+The roles admin, reviewer and user are created. The user is created with a hashed password, since storing passwords in plaintext is a security risk.
 
-IdentityUser er tilpasset fra User-modellen med tilleggsattributter som Department og Active, slik interessentene krevde.
+IdentityUser is customized from the User model with additional attributes such as Department and Active, as the stakeholders required.
 
-Når modellene er definert, opprettes tabellene ved å migrere og oppdatere databasen gjennom objektrelasjonell mapping.
+Once the models are defined, the tables are created by migrating and updating the database through object relational mapping.
 
-Prosjektet bruker Entity Framework, som støtter LINQ-spørringer som utfører Create-, Read-, Update- og Delete-operasjoner på databasen.
+The project uses Entity Framework, which supports LINQ queries that perform Create, Read, Update and Delete operations on the database.
 
-Controlleren har deretter ansvar for å returnere views, model binding, modellvalidering og modellfeil.
+The controller is then responsible for returning views, model binding, model validation and model errors.
 
-### Mermaiddiagram
+### Mermaid Diagram
 
 ![MMD](images/mermaiddiagram28.png)
 
-Laget med https://mermaid.live
+Made with https://mermaid.live
 
-### Systemkontekstdiagram
+### System Context Diagram
 
 ![SCD](images/systemcontextdiagram11_v2.png)
 
-Basert på C4-modellen: https://c4model.com/diagrams/system-context
+Based on the C4 model: https://c4model.com/diagrams/system-context
 
-## Enhetstest
+## Unit Testing
 
-### Validering av modellstatus
-Sjekker om modellstatusen er gyldig
+### Model state validation
+Checks whether the model state is valid
 https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketTest/Test1.cs#L17-L34
 
-### Innsending av hindring
-Sjekker om hindringen blir lagret
+### Obstacle submission
+Checks whether the obstacle is saved
 https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketTest/Test1.cs#L40-L75
 
-### Videresending ved innlogging
-Sjekker om brukeren blir videresendt når hen er logget inn
+### Redirect on login
+Checks whether the user is redirected once they are logged in
 https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketTest/Test1.cs#L81-L122
 
-### Resultater
+### Results
  
 ![UNI](images/unittesting13.png)
 
-## Systemtest
+## System Testing
 
-### Verdiområde
+### Value range
 
-Under systemtesting førte redigering av rapporthøyden med en stor verdi til dette problemet:
+During system testing, editing the report height with a large value led to this problem:
 
 "Value was either too large or too small for an Int32."
 
 ![ONL](images/range26.png)
 
-Verdiområdet ble rettet fra [Range(0, 200)] til [Range(0.0, 200.0)]
+The range was corrected from [Range(0, 200)] to [Range(0.0, 200.0)]
 
-### Tomt skjema
+### Empty form
 
-Brukeren sender inn tomme data i skjemaet.
+The user submits empty data in the form.
 
 ![EMP](images/empty24.png)
 
-Utkastet kan nå redigeres med de tomme dataene.
+The draft can now be edited with the empty data.
 
 ![FIL](images/filled25.png)
 
-### Offlinekart
+### Offline map
 
-Kartet vises online (uten struping) med grønn HTTP-status (200)
+The map renders online (without throttling) with a green HTTP status (200)
 
 ![ONL](images/online22.png)
 
-Kartet vises offline uten HTTP-status.
+The map renders offline with no HTTP status.
 
 ![OFL](images/offline23.png)
 
-## Sikkerhetstest
+## Security Testing
 
 ### ZAP
 
-ZAP avdekket Content Security Policy som en høy risiko.
-Bruken av Tailwind CDN, HTTP og uspesifisert Content-Type er en sikkerhetsrisiko.
-I produksjon ville dataene blitt lagret lokalt i stedet.
-I tillegg ville HTTP blitt migrert til HTTPS for å unngå at passord i klartekst er synlige over nettverket.
+ZAP flagged Content Security Policy as a high risk.
+The use of the Tailwind CDN, HTTP and an unspecified Content-Type is a security risk.
+In production, the data would have been stored locally instead.
+In addition, HTTP would have been migrated to HTTPS to avoid plaintext passwords being visible over the network.
 
-[Se ZAP-rapporten](security/zapscan.html)
+[View the ZAP report](security/zapscan.html)
 
-Last ned ZAP-rapporten over for å se sikkerhetsproblemene.
+Download the ZAP report above to see the security issues.
 
-### CIA-triaden
+### The CIA Triad
 
-#### Konfidensialitet
+#### Confidentiality
 
-Reviewere er begrenset ut fra disse kriteriene:
+Reviewers are restricted based on these criteria:
 
-1. Om de eier rapporten
-2. Om rapporten er delt med dem
-3. Om de tilhører samme avdeling
+1. Whether they own the report
+2. Whether the report has been shared with them
+3. Whether they belong to the same department
 
 https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketProject/Controllers/AccountController.cs#L398-L401
 
-Hvis en rapport er delt med dem, kan de ikke dele den videre.
+If a report has been shared with them, they cannot share it onward.
 
 https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketProject/Controllers/AccountController.cs#L470-L472
 
-Dette ivaretar konfidensialitet, ettersom reviewere ikke kan dele rapporten videre til standardbrukere.
-I tillegg krever need-to-know-prinsippet at kun brukere som trenger informasjonen skal ha tilgang til den.
+This preserves confidentiality, since reviewers cannot pass the report on to standard users.
+In addition, the need-to-know principle requires that only users who need the information should have access to it.
 
-#### Integritet
+#### Integrity
 
-Root-brukere har full tilgang til filsystemet.
+Root users have full access to the file system.
 
 https://github.com/dovidee/KartverketProject/blob/4dfe9b01d0d3ad47ad11f4ed9ea5672a0cce5419/docker-compose.yml#L19-L24
 
-Å sette opp en appuser isolerer containeren, slik at det blir vanskeligere for angripere å kartlegge systemet for sårbarheter.
-I tillegg krever prinsippet om minste privilegium at brukere skal ha minst mulig tilgang for å utføre en oppgave.
+Setting up an appuser isolates the container, making it harder for attackers to map the system for vulnerabilities.
+In addition, the principle of least privilege requires that users have the minimum access needed to perform a task.
 
-#### Tilgjengelighet
+#### Availability
 
-Angripere kan oversvømme databasen med forespørsler for å ta ned tjenesten.
+Attackers can flood the database with requests to take the service down.
 
 https://github.com/dovidee/KartverketProject/blob/4dfe9b01d0d3ad47ad11f4ed9ea5672a0cce5419/docker-compose.yml#L30-L35
 
-Helsesjekken sørger for at mariadb-tjenesten holdes i gang.
+The health check makes sure the mariadb service stays running.
 
 ### OWASP: Security Misconfiguration
 
 #### Stack Trace
 
-Stack trace kan avsløre feil som kan brukes til feilbasert SQL eller XSS.
+A stack trace can reveal errors that can be used for error based SQL injection or XSS.
 
 ![STACK](images/stacktrace16.png)
 
-En exception handler videresender brukeren til en feilside i stedet for å vise stack tracen.
-Under utvikling trenger utviklere stack tracen for å finne problemer.
+An exception handler redirects the user to an error page instead of displaying the stack trace.
+During development, developers need the stack trace to find problems.
 
 ### OWASP: Identification and Authentication Failures 
 
 #### Brute Force
 
-På usikre nettsider kan angripere avdekke gyldige brukernavn fordi feilmeldingene skiller mellom dem:
+On insecure websites, attackers can uncover valid usernames because the error messages distinguish between them:
 
-1. "Username/email already taken" bekrefter at brukernavnet allerede finnes.
-2. "Incorrect password" bekrefter at brukernavnet er riktig, men at passordet er feil.
+1. "Username/email already taken" confirms that the username already exists.
+2. "Incorrect password" confirms that the username is correct, but that the password is wrong.
 
-Denne applikasjonen viser i stedet en generisk melding, "Invalid login attempt", uansett hva som er feil.
-Etter 5 mislykkede forsøk låses kontoen i 15 minutter.
+This application instead shows a generic message, "Invalid login attempt", no matter what is wrong.
+After 5 failed attempts, the account is locked for 15 minutes.
 
 ![BRUTE](images/brute20.png)
-
-Dette gjør brute force i praksis ubrukelig.
 
 ### OWASP: Injection
 
 #### XSS
 
-XSS kan injisere JavaScript på andre brukeres sider.
-La oss si at angriperen bruker {}; alert(0); // i BurpSuite.
-Deretter URL-enkodes nyttelasten for videre forespørsler:
+XSS can inject JavaScript into other users' pages.
+Let us say the attacker uses {}; alert(0); // in BurpSuite.
+The payload is then URL encoded for subsequent requests:
 
 ![XSS](images/xss17.png)
 
-De kan så vise varselet på siden.
+They can then display the alert on the page.
 
 ![ALERT](images/alert18.png)
 
-Det er trygt å hente modellen og parse HTML-en som textContent, så lenge den ikke legges inn i innerHTML.
+It is safe to fetch the model and parse the HTML as textContent, as long as it is not inserted into innerHTML.
 
 https://github.com/dovidee/KartverketProject/blob/433e47255b20bc2ca6cc992841a94e9dc0285d14/KartverketProject/wwwroot/js/mapoverview.js#L14-L20
 
-Objektet parses deretter for å opprette et GeoJSON-objekt som viser markøren i kartet.
+The object is then parsed to create a GeoJSON object that displays the marker on the map.
 
 ![REG](images/register19.png)
 
@@ -353,69 +351,69 @@ Objektet parses deretter for å opprette et GeoJSON-objekt som viser markøren i
 
 #### IDOR
 
-Autentiserte brukere kan se sine egne rapporter.
-Men brukere kunne potensielt endre ID-en i headeren for å endre andre brukeres rapporter.
-Koden under hindrer en bruker i å hente en rapport som ikke er deres, ut fra ID-en.
+Authenticated users can view their own reports.
+But users could potentially change the ID in the header to modify other users' reports.
+The code below prevents a user from retrieving a report that is not theirs, based on the ID.
 
 https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketProject/Controllers/AccountController.cs#L184-L188
 
-De blir videresendt til "Access Denied"
+They are redirected to "Access Denied"
 
 ![IDOR](images/idor21.png)
 
-Slik kan ikke brukere manipulere URL-en for å endre andres rapporter.
+This way, users cannot manipulate the URL to modify other people's reports.
 
 #### CSRF
 
-CSRF lurer en autentisert bruker til å utføre en utilsiktet handling.
-Angriperen lager en URL med skjemaet som brukeren klikker på.
-Dette kan være ødeleggende hvis brukeren er admin.
+CSRF tricks an authenticated user into performing an unintended action.
+The attacker crafts a URL with the form that the user clicks.
+This can be devastating if the user is an admin.
 
 https://github.com/dovidee/KartverketProject/blob/fb0fb4271ddc0f080dec6b35b7023c38041efda0/KartverketProject/Views/Obstacle/DataForm.cshtml#L57-L58
 
-Anti forgery token legges inn i skjemaet
+The anti forgery token is embedded in the form
 
 https://github.com/dovidee/KartverketProject/blob/fb0fb4271ddc0f080dec6b35b7023c38041efda0/KartverketProject/Controllers/ObstacleController.cs#L34-L35
 
-Controlleren validerer deretter hver forespørsel.
+The controller then validates every request.
 
 https://github.com/dovidee/KartverketProject/blob/fb0fb4271ddc0f080dec6b35b7023c38041efda0/KartverketProject/Program.cs#L81
 
-Det ondsinnede nettstedet vil ikke ha en matchende CSRF-token, noe som stopper angriperen.
+The malicious site will not have a matching CSRF token, which stops the attacker.
 
 ### Content Security Policy
 
 https://github.com/dovidee/KartverketProject/blob/fb0fb4271ddc0f080dec6b35b7023c38041efda0/KartverketProject/Program.cs#L81-L84
 
-X-Frame-Options er satt til DENY for å hindre at <iframe> vises i et annet origin.
+X-Frame-Options is set to DENY to prevent <iframe> from being rendered on another origin.
 
-X-Content-Type-Options hindrer angripere i å kjøre ondsinnet kode som XSS hvis nettleseren gjetter feil Content-Type.
+X-Content-Type-Options prevents attackers from running malicious code such as XSS if the browser guesses the wrong Content-Type.
 
-Referrer-Policy hindrer at URL-informasjon som stier sendes videre til et annet origin, noe som utnyttes ved CSRF.
+Referrer-Policy prevents URL information such as paths from being passed on to another origin, which is exploited in CSRF.
 
-## Brukertest
+## User Testing
 
-Brukervennligheten i applikasjonen ble testet på et nært familiemedlem.
+The usability of the application was tested on a close family member.
 
 https://youtu.be/Tqa0U8SsCfY
 
-Videoen over viser at brukeren er usikker på hvordan hen skal:
+The video above shows that the user is unsure how to:
 
-1. Samhandle med kartet.
-2. Tegne en markør.
-3. Se skjemaet.
+1. Interact with the map.
+2. Draw a marker.
+3. See the form.
 
 ![IDOR](images/draw27.png)
 
-Skjemaet ble plassert til høyre, samt på oversiktssiden.
-I tillegg ble det lagt til en tegnemodus for å slå tegning av og på.
+The form was placed on the right, as well as on the overview page.
+In addition, a drawing mode was added to toggle drawing on and off.
 
-## Bidragsytere
+## Contributors
 
-En spesiell takk til DAkintola94 for hjelpen, og for at vi fikk gjenbruke koden hans for Core Identity.
+Special thanks to DAkintola94 for the help, and for letting us reuse his Core Identity code.
 
-Du finner prosjektet hans her:
+You can find his project here:
 
 https://github.com/DAkintola94/MatFrem/tree/main
 
-Generativ KI ble brukt til å generere Tailwind CSS-sider og til å forbedre eksisterende kode.
+Generative AI was used to generate Tailwind CSS pages and to improve existing code.
