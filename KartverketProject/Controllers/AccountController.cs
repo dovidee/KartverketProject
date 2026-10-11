@@ -51,7 +51,7 @@ namespace KartverketProject.Controllers
             var user = new User { 
                 UserName = model.UserName, 
                 Email = model.Email, 
-                Department = model.Department, // default NLA
+                Department = "NLA", // settes av server, ikke fra skjema
                 LockoutEnabled = true };
             // skap ny bruker og passord
             var result = await _userManager.CreateAsync(user, model.Password);

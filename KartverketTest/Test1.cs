@@ -131,8 +131,7 @@ public class ControllerTests
         {
             UserName = "beta",
             Email = "beta@example.com",
-            Password = "Pass123!",
-            Department = "NLA"
+            Password = "Pass123!"
         };
 
         // Act

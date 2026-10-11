@@ -14,7 +14,5 @@ namespace KartverketProject.Dtos
         [Required(ErrorMessage = "Please set a password")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
-
-        public string Department { get; set; } = "NLA";
     }
 }
