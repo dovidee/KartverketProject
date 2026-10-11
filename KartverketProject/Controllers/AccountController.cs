@@ -64,17 +64,9 @@ namespace KartverketProject.Controllers
                 return RedirectToAction("DataForm", "Obstacle");
             }
 
-            // sjekk hvis resultat har error som duplikat navn eller epost
-            if (result.Errors.Any(e => e.Code.Contains("DuplicateUserName") || e.Code.Contains("DuplicateEmail")))
-            {
-                ModelState.AddModelError(string.Empty, "User already taken");
-            }
-            // ellers minimum passordkrav
-            else
-            {
-                ModelState.AddModelError(string.Empty,
-                    "Password must have at least 6 characters, including an uppercase letter, a lowercase letter, a number, and a symbol.");
-            }
+            // samme melding uansett, avslorer ikke om brukernavnet finnes
+            ModelState.AddModelError(string.Empty,
+                "Could not create account. Try a different username, or a password with at least 6 characters, including an uppercase letter, a lowercase letter, a number, and a symbol.");
             // send til view med DTO model.
             return View(model);
         }
@@ -113,14 +105,8 @@ namespace KartverketProject.Controllers
             // finn brukerens navn
             var currentUser = await _userManager.FindByNameAsync(model.UserName);
 
-            // hvis bruker ikke eksisterer
-            if (currentUser == null)
-            {
-                return NotFound();
-            }
-
             // hvis bruker eksisterer
-            if (result.Succeeded)
+            if (result.Succeeded && currentUser != null)
             {
                 // hent opp rapporter som ikke er sitt eller som er tomme i begrunnelse
                 var unseenReports = await _context.Report
@@ -147,13 +133,6 @@ namespace KartverketProject.Controllers
                     await _context.SaveChangesAsync();
                 }
                 return RedirectToAction("DataForm", "Obstacle");
-            }
-
-            // hvis feil passord 5 ganger
-            if (result.IsLockedOut)
-            {
-                ModelState.AddModelError("", "Account locked due to too many failed attempts. Try again later.");
-                return View(model);
             }
 
             // hvis login feiler
@@ -186,8 +165,9 @@ namespace KartverketProject.Controllers
         }
 
 
-        // GET: /Account/Logout
-        [HttpGet]
+        // POST: /Account/Logout
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
@@ -275,7 +255,7 @@ namespace KartverketProject.Controllers
             var existing = await _context.Obstacle
                 .Include(o => o.ReportEntries)
                     .ThenInclude(r => r.User)
-                .FirstOrDefaultAsync(o => o.ObstacleId == id);
+                .FirstOrDefaultAsync(o => o.ObstacleId == report.ObstacleId);
 
             // sjekk om hindre eksisterer
             if (existing == null)
@@ -435,6 +415,14 @@ namespace KartverketProject.Controllers
                 TempData["Error"] = "Reason is too long";
                 return RedirectToAction("AllReports");
             }
+
+            // kun gyldige statuser
+            if (newStatus != "Pending" && newStatus != "Approved" && newStatus != "Rejected")
+            {
+                TempData["Error"] = "Invalid status";
+                return RedirectToAction("AllReports");
+            }
+
             var currentUserId = _userManager.GetUserId(User);
 
             // hent opp bruker sin rapport som er delt med

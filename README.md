@@ -27,10 +27,19 @@ Register and view obstacles on the map, even without an internet connection.
 14. [Security Testing](#security-testing)
 15. [User Testing](#user-testing)
 
+### Future Improvements
+16. [Fat Controller](#fat-controller)
+
 ### Contributors
-16. [Contributors](#contributors-1)
+17. [Contributors](#contributors-1)
 
 ## Getting Started
+
+Requirements:
+
+1. Docker Desktop
+2. Visual Studio
+3. The offline map, otherwise you cannot place a marker or submit a report. See [Offline Map](#offline-map).
 
 
 1. Open cmd and clone the project
@@ -69,7 +78,7 @@ Register and view obstacles on the map, even without an internet connection.
 Tools -> NuGet Package Manager -> Package Manager Console
 
 
-7. Run the following command
+7. Run the following command (you need Docker Desktop)
 
 
 docker compose up --build
@@ -203,17 +212,17 @@ Based on the C4 model: https://c4model.com/diagrams/system-context
 
 ## Unit Testing
 
-### Model state validation
-Checks whether the model state is valid
-https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketTest/Test1.cs#L17-L34
-
 ### Obstacle submission
 Checks whether the obstacle is saved
-https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketTest/Test1.cs#L40-L75
+https://github.com/dovidee/KartverketProject/blob/b81e030862e7a890a0c09e3c74813510f822684f/KartverketTest/Test1.cs#L17-L59
 
 ### Redirect on login
 Checks whether the user is redirected once they are logged in
-https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketTest/Test1.cs#L81-L122
+https://github.com/dovidee/KartverketProject/blob/b81e030862e7a890a0c09e3c74813510f822684f/KartverketTest/Test1.cs#L62-L100
+
+### Redirect on register
+Checks whether the user is redirected once they have registered
+https://github.com/dovidee/KartverketProject/blob/b81e030862e7a890a0c09e3c74813510f822684f/KartverketTest/Test1.cs#L103-L145
 
 ### Results
  
@@ -289,16 +298,18 @@ Root users have full access to the file system.
 
 https://github.com/dovidee/KartverketProject/blob/4dfe9b01d0d3ad47ad11f4ed9ea5672a0cce5419/docker-compose.yml#L19-L24
 
-Setting up an appuser isolates the container, making it harder for attackers to map the system for vulnerabilities.
+user: "999:999" runs the MariaDB container as a non-root user instead of root.
+The application connects to the database as appuser instead of the root database account.
 In addition, the principle of least privilege requires that users have the minimum access needed to perform a task.
 
 #### Availability
 
-Attackers can flood the database with requests to take the service down.
+If the database crashes, the application can no longer save or show reports.
 
-https://github.com/dovidee/KartverketProject/blob/4dfe9b01d0d3ad47ad11f4ed9ea5672a0cce5419/docker-compose.yml#L30-L35
+https://github.com/dovidee/KartverketProject/blob/4dfe9b01d0d3ad47ad11f4ed9ea5672a0cce5419/docker-compose.yml#L18-L35
 
-The health check makes sure the mariadb service stays running.
+restart: always restarts the mariadb container if it stops.
+The health check pings the database every 10 seconds and marks the container as unhealthy after 5 failed pings in a row.
 
 ### OWASP: Security Misconfiguration
 
@@ -308,8 +319,11 @@ A stack trace can reveal errors that can be used for error based SQL injection o
 
 ![STACK](images/stacktrace16.png)
 
-An exception handler redirects the user to an error page instead of displaying the stack trace.
-During development, developers need the stack trace to find problems.
+https://github.com/dovidee/KartverketProject/blob/b81e030862e7a890a0c09e3c74813510f822684f/KartverketProject/Program.cs#L84-L88
+
+Outside the Development environment, an exception handler shows an error page instead of the stack trace.
+During development, developers need the stack trace to find problems, so it is still shown there.
+docker-compose.yml and docker-compose.override.yml set ASPNETCORE_ENVIRONMENT=Production, so the stack trace is hidden. Set it to Development to see it while debugging.
 
 ### OWASP: Identification and Authentication Failures 
 
@@ -320,8 +334,12 @@ On insecure websites, attackers can uncover valid usernames because the error me
 1. "Username/email already taken" confirms that the username already exists.
 2. "Incorrect password" confirms that the username is correct, but that the password is wrong.
 
-This application instead shows a generic message, "Invalid login attempt", no matter what is wrong.
+This application instead shows a generic message, "Invalid login attempt", no matter what is wrong, including when the account is locked.
 After 5 failed attempts, the account is locked for 15 minutes.
+
+Registration shows the same message whether the username is taken or the password is too weak.
+This only partly helps: with a strong password, a failed registration still means the username is taken.
+OWASP recommends emailing an activation link instead, which this application does not have.
 
 ![BRUTE](images/brute20.png)
 
@@ -352,16 +370,19 @@ The object is then parsed to create a GeoJSON object that displays the marker on
 #### IDOR
 
 Authenticated users can view their own reports.
-But users could potentially change the ID in the header to modify other users' reports.
-The code below prevents a user from retrieving a report that is not theirs, based on the ID.
+But users could potentially change the ID in the URL, such as /EditReport/3, to modify other users' reports.
+The code below checks that the report belongs to the logged in user before showing it.
 
-https://github.com/dovidee/KartverketProject/blob/9073420b0a123a217a8d737adba32ce542875756/KartverketProject/Controllers/AccountController.cs#L184-L188
+https://github.com/dovidee/KartverketProject/blob/b81e030862e7a890a0c09e3c74813510f822684f/KartverketProject/Controllers/AccountController.cs#L235-L245
 
-They are redirected to "Access Denied"
+If the report belongs to someone else, Forbid() redirects them to "Access Denied".
+If the ID does not exist, they get the error page instead.
 
 ![IDOR](images/idor21.png)
 
 This way, users cannot manipulate the URL to modify other people's reports.
+
+Hidden form fields can also be changed by the user, so when a report is saved, the obstacle is taken from the checked report instead of the ObstacleId sent in the form.
 
 #### CSRF
 
@@ -375,21 +396,25 @@ The anti forgery token is embedded in the form
 
 https://github.com/dovidee/KartverketProject/blob/fb0fb4271ddc0f080dec6b35b7023c38041efda0/KartverketProject/Controllers/ObstacleController.cs#L34-L35
 
-The controller then validates every request.
-
-https://github.com/dovidee/KartverketProject/blob/fb0fb4271ddc0f080dec6b35b7023c38041efda0/KartverketProject/Program.cs#L81
+[ValidateAntiForgeryToken] makes the controller reject the request if the token is missing or wrong.
+Every POST action in the project has it.
 
 The malicious site will not have a matching CSRF token, which stops the attacker.
 
 ### Content Security Policy
 
-https://github.com/dovidee/KartverketProject/blob/fb0fb4271ddc0f080dec6b35b7023c38041efda0/KartverketProject/Program.cs#L81-L84
+https://github.com/dovidee/KartverketProject/blob/b81e030862e7a890a0c09e3c74813510f822684f/KartverketProject/Program.cs#L96-L112
 
-X-Frame-Options is set to DENY to prevent <iframe> from being rendered on another origin.
+Content-Security-Policy controls which sources the page may load scripts, styles, images and fonts from.
+default-src 'self' is the fallback, frame-ancestors 'none' blocks other pages from framing it, and form-action 'self' only lets forms submit to this site.
+
+X-Frame-Options is set to DENY, so the page cannot be shown in an <iframe> at all, not even on the same origin.
 
 X-Content-Type-Options prevents attackers from running malicious code such as XSS if the browser guesses the wrong Content-Type.
 
-Referrer-Policy prevents URL information such as paths from being passed on to another origin, which is exploited in CSRF.
+Referrer-Policy is set to strict-origin-when-cross-origin, so other origins only see the origin, not the path or query string, and HTTPS pages send no referrer to HTTP pages.
+
+Strict-Transport-Security tells the browser to only use HTTPS for this site for one year (max-age=31536000).
 
 ## User Testing
 
@@ -403,10 +428,27 @@ The video above shows that the user is unsure how to:
 2. Draw a marker.
 3. See the form.
 
-![IDOR](images/draw27.png)
+![DRAW](images/draw27.png)
 
 The form was placed on the right, as well as on the overview page.
 In addition, a drawing mode was added to toggle drawing on and off.
+
+## Future Improvements
+
+### Fat Controller
+
+AccountController has grown to over 600 lines and 19 actions.
+It handles login and registration, but also editing, deleting, reviewing and sharing reports, and it queries the database directly about 30 times.
+
+Future improvements:
+
+1. Keep AccountController for account actions only: register, login, logout and profile.
+2. Move the report actions into a ReportController, and reviewing and sharing into a ReviewController.
+3. Move the database queries and the permission check into a service, such as ReportService, so the controllers only handle requests and return views.
+
+This makes it hard to test, since every test has to set up the whole controller with UserManager, SignInManager and the database.
+
+The same permission check (owner, shared with, or same department) is also copied into several actions.
 
 ## Contributors
 

@@ -57,6 +57,12 @@ namespace KartverketProject
                 options.Lockout.AllowedForNewUsers = true;
             });
 
+            // sjekk roller og security stamp pa hver request
+            builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+            {
+                options.ValidationInterval = TimeSpan.Zero;
+            });
+
             // MVC
             builder.Services.AddControllersWithViews();
 
@@ -86,6 +92,9 @@ namespace KartverketProject
                 app.UseExceptionHandler("/Home/Error"); // stack trace fix
                 app.UseHsts();
             }
+
+            // vis feilside ved 404 osv
+            app.UseStatusCodePagesWithReExecute("/Home/Error");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

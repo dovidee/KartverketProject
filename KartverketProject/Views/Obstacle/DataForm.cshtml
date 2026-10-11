@@ -54,7 +54,7 @@
                 <p class="text-gray-600 mt-1">Please register an obstacle:</p>
             </header>
 
-            <form asp-action="DataForm" method="post" class="space-y-5">
+            <form id="obstacleForm" asp-action="DataForm" method="post" class="space-y-5">
                 @Html.AntiForgeryToken()
 
                 <div class="grid gap-5 sm:grid-cols-2">
